@@ -1,0 +1,21 @@
+<mat-card>
+  <mat-form-field class="questions__input">
+    <input matInput placeholder="Search questions..." [formControl]="intitleForm" />
+  </mat-form-field>
+
+  <mat-card-content>
+    <ng-container *ngIf="!(loading$ | async); else loader">
+      <ng-container></ng-container>
+      <app-question-list [questions]="questions$ | async"> </app-question-list>
+    </ng-container>
+
+    <ng-template>
+      <span></span>Spinner
+      <mat-spinner></mat-spinner>
+    </ng-template>
+  </mat-card-content>
+  <mat-card-actions>
+    <a mat-button *ngIf="page > 1" [routerLink]="['/']" [queryParams]="{ page: page - 1 }">PREV</a>
+    <button mat-button *ngIf="(hasMore$ | async)" [routerLink]="['/']" [queryParams]="{ page: page + 1 }">NEXT</button>
+  </mat-card-actions>
+</mat-card>

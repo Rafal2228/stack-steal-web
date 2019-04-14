@@ -1,0 +1,11 @@
+<mat-list>
+  <ng-container *ngFor="let question of questions">
+    <mat-list-item>
+      <img matListAvatar [src]="question.owner.profileImage" alt="..." />
+      <h4 matLine>{{ question.title }}</h4>
+      <p matLine>{{ question.lastActivityDate | date }}</p>
+    </mat-list-item>
+
+    <mat-divider></mat-divider>
+  </ng-container>
+</mat-list>
