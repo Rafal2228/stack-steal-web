@@ -2,4 +2,22 @@
   &__input {
     width: 100%;
   }
+
+  &__button-wrapper {
+    &:after {
+      content: '';
+      clear: both;
+      display: table;
+    }
+  }
+
+  &__next-button {
+    float: right;
+  }
+
+  &__loader-wrapper {
+    width: 100%;
+    display: flex;
+    align-items: center;
+  }
 }

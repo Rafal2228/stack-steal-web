@@ -5,17 +5,38 @@
 
   <mat-card-content>
     <ng-container *ngIf="!(loading$ | async); else loader">
-      <ng-container></ng-container>
-      <app-question-list [questions]="questions$ | async"> </app-question-list>
+      <ng-container *ngIf="intitleForm.value.length > 0; else search">
+        <app-question-list [questions]="questions$ | async"></app-question-list>
+      </ng-container>
     </ng-container>
 
-    <ng-template>
-      <span></span>Spinner
-      <mat-spinner></mat-spinner>
+    <ng-template #loader>
+      <div class="questions__loader-wrapper">
+        <mat-spinner></mat-spinner>
+      </div>
+    </ng-template>
+
+    <ng-template #search>
+      Start typing in search input to find questions
     </ng-template>
   </mat-card-content>
   <mat-card-actions>
-    <a mat-button *ngIf="page > 1" [routerLink]="['/']" [queryParams]="{ page: page - 1 }">PREV</a>
-    <button mat-button *ngIf="(hasMore$ | async)" [routerLink]="['/']" [queryParams]="{ page: page + 1 }">NEXT</button>
+    <div class="questions__button-wrapper">
+      <a
+        mat-button
+        *ngIf="page > 1 && intitleForm.value.length > 0"
+        [routerLink]="['/']"
+        [queryParams]="{ page: page - 1, pagesize: pagesize, intitle: intitleForm.value }"
+        >PREV</a
+      >
+      <a
+        class="questions__next-button"
+        mat-button
+        *ngIf="(hasMore$ | async) && intitleForm.value.length > 0"
+        [routerLink]="['/']"
+        [queryParams]="{ page: page + 1, pagesize: pagesize, intitle: intitleForm.value }"
+        >NEXT</a
+      >
+    </div>
   </mat-card-actions>
 </mat-card>

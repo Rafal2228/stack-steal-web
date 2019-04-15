@@ -1,25 +1,22 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, ParamMap } from '@angular/router';
 import { Apollo, QueryRef } from 'apollo-angular';
 import gql from 'graphql-tag';
-import { Observable, Subscription } from 'rxjs';
-import { debounceTime, map } from 'rxjs/operators';
+import { Observable, Subscription, of, combineLatest } from 'rxjs';
+import { debounceTime, map, filter } from 'rxjs/operators';
 import { GetQuestionsResponse, Question } from '../../models/question.model';
 
 const questionsQuery = gql`
   query questionsQuery($intitle: String, $page: Int, $pagesize: Int) {
     getQuestions(intitle: $intitle, page: $page, pagesize: $pagesize) {
       data {
-        tags
-        isAnswered
-        viewCount
+        questionId
         title
         lastActivityDate
         owner {
           profileImage
           displayName
-          link
         }
       }
       hasMore
@@ -30,7 +27,7 @@ const questionsQuery = gql`
 @Component({
   selector: 'app-questions',
   templateUrl: './questions.component.html',
-  styleUrls: ['./questions.component.scss']
+  styleUrls: ['./questions.component.scss'],
 })
 export class QuestionsComponent implements OnInit, OnDestroy {
   query$: QueryRef<{ getQuestions: GetQuestionsResponse }>;
@@ -52,58 +49,67 @@ export class QuestionsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    this.loading$ = of(false);
+    this.questions$ = of([]);
+    this.hasMore$ = of(false);
+
     const { queryParamMap } = this.route.snapshot;
 
     this.intitleForm = new FormControl(queryParamMap.get('intitle'));
-    this.page = +queryParamMap.get('page') || 1;
-    this.pagesize = +queryParamMap.get('pagesize') || 30;
 
-    this.query$ = this.apollo.watchQuery({
-      query: questionsQuery,
-      variables: {
-        intitle: this.intitleForm.value,
-        page: this.page,
-        pagesize: this.pagesize
-      },
-      fetchPolicy: 'cache-and-network'
-    });
-
-    this.loading$ = this.query$.valueChanges.pipe(map(res => (console.log(res), res.loading)));
-    this.questions$ = this.query$.valueChanges.pipe(map(res => res.data && res.data.getQuestions.data));
-    this.hasMore$ = this.query$.valueChanges.pipe(map(res => res.data && res.data.getQuestions.hasMore));
-
-    this.intitleForm.valueChanges.pipe(debounceTime(1000)).subscribe(intitle => {
-      this.router.navigate(['.'], { queryParams: { intitle } });
-    });
-
-    this.routeSub = this.route.queryParamMap.subscribe(query => {
-      if (!query.has('intitle')) {
-        return;
-      }
-
-      const intitle = query.get('intitle');
-
-      if (intitle.length < 1) {
-        return;
-      }
-
-      if (query.has('page')) {
-        this.page = +query.get('page') || this.page;
-      }
-
-      if (query.has('pagesize')) {
-        this.pagesize = +query.get('pagesize') || this.pagesize;
-      }
-
-      this.query$.setVariables({
-        intitle,
-        page: this.page,
-        pagesize: this.pagesize
+    this.intitleSub = combineLatest(this.route.queryParamMap, this.intitleForm.valueChanges.pipe(debounceTime(400)))
+      .pipe(
+        filter(([query, intitle]) => query.get('intitle') !== intitle),
+        map(values => values[1] as string)
+      )
+      .subscribe(intitle => {
+        this.router.navigate(['.'], { queryParams: { intitle } });
       });
-    });
+
+    this.routeSub = this.route.queryParamMap.subscribe(query => this.updateQueryFromParams(query));
+
+    this.updateQueryFromParams(queryParamMap);
   }
 
   ngOnDestroy() {
     this.routeSub.unsubscribe();
+  }
+
+  createQuery(intitle: string, page: number, pagesize: number) {
+    this.query$ = this.apollo.watchQuery({
+      query: questionsQuery,
+      variables: {
+        intitle,
+        page,
+        pagesize,
+      },
+      fetchPolicy: 'cache-and-network',
+    });
+
+    this.loading$ = this.query$.valueChanges.pipe(map(res => res.loading));
+    this.questions$ = this.query$.valueChanges.pipe(map(res => res.data && res.data.getQuestions.data));
+    this.hasMore$ = this.query$.valueChanges.pipe(map(res => res.data && res.data.getQuestions.hasMore));
+  }
+
+  updateQueryFromParams(query: ParamMap) {
+    const intitle = query.get('intitle');
+    const page = +query.get('page') || 1;
+    const pagesize = +query.get('pagesize') || 30;
+
+    this.page = page;
+
+    if (!intitle || !intitle.length) {
+      return;
+    }
+
+    if (!this.query$) {
+      this.createQuery(intitle, page, pagesize);
+    } else {
+      this.query$.refetch({
+        intitle,
+        page,
+        pagesize,
+      });
+    }
   }
 }
