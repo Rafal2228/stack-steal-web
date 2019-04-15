@@ -1,3 +1,23 @@
-<p>
-  single works!
-</p>
+<ng-container *ngIf="!(loading$ | async); else loader">
+  <app-question-details [question]="question$ | async" *ngIf="(question$ | async)"></app-question-details>
+
+  <br />
+
+  <app-answer-details
+    [answer]="acceptedAnswer$ | async"
+    *ngIf="(acceptedAnswer$ | async); else list"
+  ></app-answer-details>
+</ng-container>
+
+<ng-template #loader>
+  <div class="single__loader-wrapper">
+    <mat-spinner></mat-spinner>
+  </div>
+</ng-template>
+
+<ng-template #list>
+  <ng-container *ngFor="let answer of (answers$ | async)">
+    <app-answer-details [answer]="answer"></app-answer-details>
+    <br />
+  </ng-container>
+</ng-template>

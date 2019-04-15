@@ -11,7 +11,7 @@ export interface Answer {
   bodyMarkdown?: string;
 }
 
-export interface AnwsersResponse {
+export interface AnswersResponse {
   data?: Answer[];
   hasMore?: boolean;
 }

@@ -1,4 +1,4 @@
-import { AnwsersResponse } from './answer.model';
+import { AnswersResponse } from './answer.model';
 import { User } from './user.model';
 
 export interface GetQuestionsResponse {
@@ -19,5 +19,5 @@ export interface Question {
   questionId: number;
   link?: string;
   title?: string;
-  answers?: AnwsersResponse;
+  answers?: AnswersResponse;
 }

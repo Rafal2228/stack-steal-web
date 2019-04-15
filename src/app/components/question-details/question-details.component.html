@@ -1,0 +1,12 @@
+<mat-card *ngIf="!!question">
+  <mat-card-header>
+    <img mat-card-avatar [src]="question.owner.profileImage" [alt]="question.owner.displayName" />
+    <mat-card-title>{{ question.title }}</mat-card-title>
+    <mat-card-subtitle>Last activity on {{ question.lastActivityDate | date }}</mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    <mat-chip-list>
+      <mat-chip *ngFor="let tag of question.tags">{{ tag }}</mat-chip>
+    </mat-chip-list>
+  </mat-card-content>
+</mat-card>

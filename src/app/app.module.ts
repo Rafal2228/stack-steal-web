@@ -8,6 +8,7 @@ import {
   MatInputModule,
   MatListModule,
   MatProgressSpinnerModule,
+  MatChipsModule,
 } from '@angular/material';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -19,6 +20,8 @@ import { AppComponent } from './app.component';
 import { QuestionListComponent } from './components/question-list/question-list.component';
 import { QuestionsComponent } from './containers/questions/questions.component';
 import { SingleComponent } from './containers/single/single.component';
+import { QuestionDetailsComponent } from './components/question-details/question-details.component';
+import { AnswerDetailsComponent } from './components/answer-details/answer-details.component';
 
 const uri = 'http://localhost:3000/graphql';
 
@@ -44,10 +47,18 @@ export function createApollo(httpLink: HttpLink) {
     MatCardModule,
     MatInputModule,
     MatProgressSpinnerModule,
+    MatChipsModule,
 
     AppRoutingModule,
   ],
-  declarations: [AppComponent, QuestionsComponent, QuestionListComponent, SingleComponent],
+  declarations: [
+    AppComponent,
+    QuestionsComponent,
+    QuestionListComponent,
+    SingleComponent,
+    QuestionDetailsComponent,
+    AnswerDetailsComponent,
+  ],
   providers: [
     {
       provide: APOLLO_OPTIONS,
